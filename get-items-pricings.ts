@@ -1,5 +1,6 @@
 const auctionHouseAID = 564; // Soulseeker
-const auctionHouseBID = 562; // Spineshatter
+// const auctionHouseBID = 562; // Spineshatter
+const auctionHouseBID = 560; // Thunderstrike
 
 const tokenBody = {
   client_id: "c260f00d-1071-409a-992f-dda2e5498536",
