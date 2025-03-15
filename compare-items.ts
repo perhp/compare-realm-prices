@@ -35,10 +35,13 @@ const bItemsDictionary = buildItemDictionary(bItems);
 const compared: CompareItem[] = aItems
   .filter((aItem: any) => {
     const gameItem = allItemsDictionary[aItem.itemId];
+
     if (
       !gameItem ||
       gameItem.quality.toLowerCase() === "poor" ||
-      (gameItem.class.toLowerCase() !== "consumable" && gameItem.class.toLowerCase() !== "trade goods")
+      (gameItem.class.toLowerCase() !== "consumable" &&
+        gameItem.class.toLowerCase() !== "trade goods" &&
+        gameItem.class.toLowerCase() !== "reagent")
     ) {
       return false;
     }
@@ -48,18 +51,19 @@ const compared: CompareItem[] = aItems
       return false;
     }
 
-    if (aItem.numAuctions < 20 || bItemsDictionary[aItem.itemId].numAuctions < 20) {
+    if (aItem.numAuctions <= 10 || bItem.numAuctions <= 10) {
       return false;
     }
 
+    const threshold = 1;
     const aItemDiffToPercentage = aItem.marketValue / aItem.minBuyout;
     const bItemDiffToPercentage = bItem.marketValue / bItem.minBuyout;
 
-    if (aItemDiffToPercentage < 0.5 || aItemDiffToPercentage > 1.5) {
+    if (aItemDiffToPercentage < 1 - threshold || aItemDiffToPercentage > 1 + threshold) {
       return false;
     }
 
-    if (bItemDiffToPercentage < 0.5 || bItemDiffToPercentage > 1.5) {
+    if (bItemDiffToPercentage < 1 - threshold || bItemDiffToPercentage > 1 + threshold) {
       return false;
     }
 
@@ -79,7 +83,7 @@ const compared: CompareItem[] = aItems
       diffPercentage: aItem.marketValue > 0 ? (diff / aItem.marketValue) * 100 : 0,
     } satisfies CompareItem;
   })
-  .filter((item: CompareItem) => !isNaN(item.diffPercentage))
+  .filter((item: CompareItem) => !isNaN(item.diffPercentage) && item.diffPercentage < 0)
   .sort((a: CompareItem, b: CompareItem) => b.diffPercentage - a.diffPercentage);
 
 await Bun.write("./data/compared-items.json", JSON.stringify(compared, null, 2));
@@ -93,7 +97,7 @@ console.table(
       From: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
       To: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
       Difference: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
-      "%": `${Math.abs(item.diffPercentage).toFixed(2)}%`,
+      "%": `${(item.diffPercentage * -1).toFixed(2)}%`,
     })),
   ["Item", "From", "To", "Difference", "%"]
 );
