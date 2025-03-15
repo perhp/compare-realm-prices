@@ -51,3 +51,17 @@ const compared: CompareItem[] = aItems
   .sort((a: CompareItem, b: CompareItem) => b.diffPercentage - a.diffPercentage);
 
 await Bun.write("./data/compared-items.json", JSON.stringify(compared, null, 2));
+
+console.table(
+  compared
+    .slice(compared.length - 10, compared.length)
+    .reverse()
+    .map((item) => ({
+      ...item,
+      aPrice: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
+      bPrice: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
+      diffPrice: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
+      diffPercentage: `${Math.abs(item.diffPercentage).toFixed(2)}%`,
+    })),
+  ["name", "aPrice", "bPrice", "diffPrice", "diffPercentage"]
+);
