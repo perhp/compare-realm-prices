@@ -9,8 +9,8 @@ interface CompareItem {
 }
 
 function convertCopperToGSC(totalCopper: number): { gold: number; silver: number; copper: number } {
-  const gold = Math.floor(totalCopper / 10000);
-  const remainderAfterGold = totalCopper % 10000;
+  const gold = Math.floor(totalCopper / 10_000);
+  const remainderAfterGold = totalCopper % 10_000;
   const silver = Math.floor(remainderAfterGold / 100);
   const copper = remainderAfterGold % 100;
 
@@ -44,24 +44,25 @@ const compared: CompareItem[] = aItems
       aPrice: convertCopperToGSC(aItem.marketValue),
       bPrice: convertCopperToGSC(bItem?.marketValue || 0),
       diff,
-      diffPrice: convertCopperToGSC(diff),
-      diffPercentage: (diff / aItem.marketValue) * 100,
+      diffPrice: convertCopperToGSC(Math.abs(diff)),
+      diffPercentage: aItem.marketValue > 0 ? (diff / aItem.marketValue) * 100 : 0,
     } satisfies CompareItem;
   })
+  .filter((item: CompareItem) => !isNaN(item.diffPercentage))
   .sort((a: CompareItem, b: CompareItem) => b.diffPercentage - a.diffPercentage);
 
 await Bun.write("./data/compared-items.json", JSON.stringify(compared, null, 2));
 
 console.table(
   compared
-    .slice(compared.length - 10, compared.length)
+    .slice(compared.length - 25, compared.length)
     .reverse()
     .map((item) => ({
-      ...item,
-      aPrice: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
-      bPrice: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
-      diffPrice: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
-      diffPercentage: `${Math.abs(item.diffPercentage).toFixed(2)}%`,
+      Item: item.name,
+      From: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
+      To: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
+      Difference: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
+      "%": `${Math.abs(item.diffPercentage).toFixed(2)}%`,
     })),
-  ["name", "aPrice", "bPrice", "diffPrice", "diffPercentage"]
+  ["Item", "From", "To", "Difference", "%"]
 );
