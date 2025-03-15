@@ -32,6 +32,7 @@ const [allItemsDictionary, aItems, bItems] = await Promise.all([
 const bItemsDictionary = buildItemDictionary(bItems);
 
 const compared: CompareItem[] = aItems
+  .filter((aItem: any) => bItemsDictionary[aItem.itemId] && aItem.numAuctions > 20 && bItemsDictionary[aItem.itemId].numAuctions > 20)
   .map((aItem: any) => {
     const bItem = bItemsDictionary[aItem.itemId];
     const diff = aItem.marketValue - (bItem?.marketValue || 0);
