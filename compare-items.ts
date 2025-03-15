@@ -5,6 +5,7 @@ interface CompareItem {
   bPrice: { gold: number; silver: number; copper: number };
   diff: number;
   diffPrice: { gold: number; silver: number; copper: number };
+  diffPercentage: number;
 }
 
 function convertCopperToGSC(totalCopper: number): { gold: number; silver: number; copper: number } {
@@ -44,8 +45,9 @@ const compared: CompareItem[] = aItems
       bPrice: convertCopperToGSC(bItem?.marketValue || 0),
       diff,
       diffPrice: convertCopperToGSC(diff),
-    };
+      diffPercentage: (diff / aItem.marketValue) * 100,
+    } satisfies CompareItem;
   })
-  .sort((a: CompareItem, b: CompareItem) => b.diff - a.diff);
+  .sort((a: CompareItem, b: CompareItem) => b.diffPercentage - a.diffPercentage);
 
 await Bun.write("./data/compared-items.json", JSON.stringify(compared, null, 2));
