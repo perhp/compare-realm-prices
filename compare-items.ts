@@ -33,14 +33,45 @@ const [allItemsDictionary, aItems, bItems] = await Promise.all([
 const bItemsDictionary = buildItemDictionary(bItems);
 
 const compared: CompareItem[] = aItems
-  .filter((aItem: any) => bItemsDictionary[aItem.itemId] && aItem.numAuctions > 20 && bItemsDictionary[aItem.itemId].numAuctions > 20)
+  .filter((aItem: any) => {
+    const gameItem = allItemsDictionary[aItem.itemId];
+    if (
+      !gameItem ||
+      gameItem.quality.toLowerCase() === "poor" ||
+      (gameItem.class.toLowerCase() !== "consumable" && gameItem.class.toLowerCase() !== "trade goods")
+    ) {
+      return false;
+    }
+
+    const bItem = bItemsDictionary[aItem.itemId];
+    if (!bItem) {
+      return false;
+    }
+
+    if (aItem.numAuctions < 20 || bItemsDictionary[aItem.itemId].numAuctions < 20) {
+      return false;
+    }
+
+    const aItemDiffToPercentage = aItem.marketValue / aItem.minBuyout;
+    const bItemDiffToPercentage = bItem.marketValue / bItem.minBuyout;
+
+    if (aItemDiffToPercentage < 0.5 || aItemDiffToPercentage > 1.5) {
+      return false;
+    }
+
+    if (bItemDiffToPercentage < 0.5 || bItemDiffToPercentage > 1.5) {
+      return false;
+    }
+
+    return true;
+  })
   .map((aItem: any) => {
     const bItem = bItemsDictionary[aItem.itemId];
     const diff = aItem.marketValue - (bItem?.marketValue || 0);
 
     return {
       id: aItem.itemId,
-      name: allItemsDictionary[aItem.itemId]?.name ?? "Unknown",
+      name: allItemsDictionary[aItem.itemId].name,
       aPrice: convertCopperToGSC(aItem.marketValue),
       bPrice: convertCopperToGSC(bItem?.marketValue || 0),
       diff,
