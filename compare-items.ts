@@ -36,13 +36,7 @@ const compared: CompareItem[] = aItems
   .filter((aItem: any) => {
     const gameItem = allItemsDictionary[aItem.itemId];
 
-    if (
-      !gameItem ||
-      gameItem.quality.toLowerCase() === "poor" ||
-      (gameItem.class.toLowerCase() !== "consumable" &&
-        gameItem.class.toLowerCase() !== "trade goods" &&
-        gameItem.class.toLowerCase() !== "reagent")
-    ) {
+    if (!gameItem || gameItem.quality.toLowerCase() === "poor") {
       return false;
     }
 
@@ -51,11 +45,15 @@ const compared: CompareItem[] = aItems
       return false;
     }
 
-    if (aItem.numAuctions <= 10 || bItem.numAuctions <= 10) {
+    if (aItem.numAuctions <= 5 || bItem.numAuctions <= 5) {
       return false;
     }
 
-    const threshold = 1;
+    if (bItem.marketValue <= 1000) {
+      return false;
+    }
+
+    const threshold = 0.5;
     const aItemDiffToPercentage = aItem.marketValue / aItem.minBuyout;
     const bItemDiffToPercentage = bItem.marketValue / bItem.minBuyout;
 
