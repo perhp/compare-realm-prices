@@ -36,16 +36,16 @@ const compared: CompareItem[] = aItems
   .filter((aItem: any) => {
     const gameItem = allItemsDictionary[aItem.itemId];
 
-    if (!gameItem || gameItem.quality.toLowerCase() === "poor") {
+    if (
+      !gameItem ||
+      gameItem.quality.toLowerCase() === "poor" ||
+      (gameItem.class.toLowerCase() !== "trade goods" && gameItem.class.toLowerCase() !== "consumables")
+    ) {
       return false;
     }
 
     const bItem = bItemsDictionary[aItem.itemId];
     if (!bItem) {
-      return false;
-    }
-
-    if (aItem.numAuctions <= 5 || bItem.numAuctions <= 5) {
       return false;
     }
 
@@ -88,7 +88,7 @@ await Bun.write("./data/compared-items.json", JSON.stringify(compared, null, 2))
 
 console.table(
   compared
-    .slice(compared.length - 25, compared.length)
+    .slice(compared.length - 30, compared.length)
     .reverse()
     .map((item) => ({
       Item: item.name,
