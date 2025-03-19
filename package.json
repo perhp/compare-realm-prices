@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "start": "bun run prices && bun run compare",
-    "prices": "bun run get-items-pricings.ts",
-    "compare": "bun run compare-items.ts"
+    "prices": "bun run src/get-prices.ts",
+    "compare": "bun run src/compare.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

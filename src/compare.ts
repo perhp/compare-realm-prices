@@ -1,12 +1,4 @@
-interface CompareItem {
-  id: number;
-  name: string;
-  aPrice: { gold: number; silver: number; copper: number };
-  bPrice: { gold: number; silver: number; copper: number };
-  diff: number;
-  diffPrice: { gold: number; silver: number; copper: number };
-  diffPercentage: number;
-}
+import type { AllItemsDictionary, CompareItem, Item } from "./models";
 
 function convertCopperToGSC(totalCopper: number): { gold: number; silver: number; copper: number } {
   const gold = Math.floor(totalCopper / 10_000);
@@ -17,23 +9,23 @@ function convertCopperToGSC(totalCopper: number): { gold: number; silver: number
   return { gold, silver, copper };
 }
 
-function buildItemDictionary(items: any[]): Record<number, any> {
-  return items.reduce<Record<number, any>>((dict, item) => {
+function buildItemDictionary(items: Item[]): Record<number, Item> {
+  return items.reduce((dict, item) => {
     dict[item.itemId] = item;
     return dict;
-  }, {});
+  }, {} as Record<number, Item>);
 }
 
 const [allItemsDictionary, aItems, bItems] = await Promise.all([
-  Bun.file("./data/all-items-dictionary.json").json(),
-  Bun.file("./data/a-items.json").json(),
-  Bun.file("./data/b-items.json").json(),
+  Bun.file("./data/all-items-dictionary.json").json() as Promise<AllItemsDictionary>,
+  Bun.file("./data/a-items.json").json() as Promise<Item[]>,
+  Bun.file("./data/b-items.json").json() as Promise<Item[]>,
 ]);
 
 const bItemsDictionary = buildItemDictionary(bItems);
 
 const compared: CompareItem[] = aItems
-  .filter((aItem: any) => {
+  .filter((aItem) => {
     const gameItem = allItemsDictionary[aItem.itemId];
 
     if (
@@ -67,7 +59,7 @@ const compared: CompareItem[] = aItems
 
     return true;
   })
-  .map((aItem: any) => {
+  .map((aItem) => {
     const bItem = bItemsDictionary[aItem.itemId];
     const diff = aItem.marketValue - (bItem?.marketValue || 0);
 
