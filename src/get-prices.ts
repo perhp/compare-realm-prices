@@ -30,5 +30,7 @@ const [aItems, bItems] = await Promise.all([
   }).then((response) => response.json()),
 ]);
 
-await Bun.write("./data/a-items.json", JSON.stringify(aItems, null, 2));
-await Bun.write("./data/b-items.json", JSON.stringify(bItems, null, 2));
+await Promise.all([
+  Bun.write("./data/a-items.json", JSON.stringify(aItems, null, 2)),
+  Bun.write("./data/b-items.json", JSON.stringify(bItems, null, 2)),
+]);
