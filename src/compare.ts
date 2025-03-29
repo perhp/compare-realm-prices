@@ -97,9 +97,10 @@ async function main() {
         From: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
         To: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
         Difference: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
+        x: `x${((item.diffPercentage / 100) * -1).toFixed(2)}`,
         "%": `${(item.diffPercentage * -1).toFixed(2)}%`,
       })),
-    ["Item", "From", "To", "Difference", "%"]
+    ["Item", "From", "To", "Difference", "x", "%"]
   );
 }
 
