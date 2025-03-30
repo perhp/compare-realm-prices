@@ -86,8 +86,6 @@ async function main() {
     .filter((item) => !isNaN(item.diffPercentage) && item.diffPercentage < 0)
     .sort((a, b) => b.diffPercentage - a.diffPercentage);
 
-  await Bun.write("./data/compared-items.json", JSON.stringify(compared, null, 2));
-
   console.table(
     compared
       .slice(compared.length - 30, compared.length)
