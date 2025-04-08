@@ -80,24 +80,21 @@ async function main() {
         bPrice: convertCopperToGSC(bItem?.marketValue || 0),
         diff,
         diffPrice: convertCopperToGSC(Math.abs(diff)),
-        diffPercentage: aItem.marketValue > 0 ? (diff / aItem.marketValue) * 100 : 0,
+        diffPercentage: aItem.marketValue > 0 ? ((bItem?.marketValue || 1) / aItem.marketValue) * 100 : 0,
       } satisfies CompareItem;
     })
-    .filter((item) => !isNaN(item.diffPercentage) && item.diffPercentage < 0)
+    .filter((item) => !isNaN(item.diffPercentage) && item.diffPercentage > 0)
     .sort((a, b) => b.diffPercentage - a.diffPercentage);
 
   console.table(
-    compared
-      .slice(compared.length - 30, compared.length)
-      .reverse()
-      .map((item) => ({
-        Item: item.name,
-        From: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
-        To: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
-        Difference: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
-        x: `x${((item.diffPercentage / 100) * -1).toFixed(2)}`,
-        "%": `${(item.diffPercentage * -1).toFixed(2)}%`,
-      })),
+    compared.slice(0, 30).map((item) => ({
+      Item: item.name,
+      From: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
+      To: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
+      Difference: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
+      x: `x${Math.abs((item.diffPercentage / 100) * -1).toFixed(2)}`,
+      "%": `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
+    })),
     ["Item", "From", "To", "Difference", "x", "%"]
   );
 }
