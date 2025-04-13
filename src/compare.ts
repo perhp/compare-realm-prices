@@ -25,7 +25,7 @@ function isValidGameItem(item: AllItemsDictionary[string]): boolean {
   }
 
   const itemClass = item.class.toLowerCase();
-  if (itemClass !== "trade goods" && itemClass !== "consumables") {
+  if (itemClass !== "trade goods" && itemClass !== "consumable") {
     return false;
   }
 
