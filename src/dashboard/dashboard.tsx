@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CompareItem } from "@/models";
+import { CompareItem, Currency } from "@/models";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderPinwheel } from "lucide-react";
 
@@ -44,43 +44,85 @@ export default function Dashboard() {
   }
 
   const result = prices.map((item) => ({
+    id: item.id,
     item: item.name,
-    from: `${item.aPrice.gold}g ${item.aPrice.silver}s ${item.aPrice.copper}c`,
-    to: `${item.bPrice.gold}g ${item.bPrice.silver}s ${item.bPrice.copper}c`,
-    difference: `${Math.abs(item.diffPrice.gold)}g ${Math.abs(item.diffPrice.silver)}s ${Math.abs(item.diffPrice.copper)}c`,
+    from: item.aPrice,
+    to: item.bPrice,
+    difference: item.diffPrice,
     times: `x${Math.abs((item.diffPercentage / 100) * -1).toFixed(2)}`,
     percentage: `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
   }));
 
   return (
-    <div className="bg-black text-gray-100 py-10">
-      <div className="container mx-auto max-w-screen-sm">
-        <div className="border border-gray-300">
-          <Table className="bg-gray-900">
+    <div className="py-10 font-medium">
+      <div className="container max-w-screen-md mx-auto">
+        <div className="border border-black rounded">
+          <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Item</TableHead>
-                <TableHead>Source Price</TableHead>
-                <TableHead>Target Price</TableHead>
-                <TableHead>Difference</TableHead>
-                <TableHead>x</TableHead>
-                <TableHead>%</TableHead>
+                <TableHead className="w-[125px] text-right">
+                  Source Price
+                </TableHead>
+                <TableHead className="w-[125px] text-right">
+                  Target Price
+                </TableHead>
+                <TableHead className="w-[125px] text-right">
+                  Difference
+                </TableHead>
+                <TableHead></TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {result.map((item) => (
-                <TableRow key={item.item}>
-                  <TableCell className="font-medium">{item.item}</TableCell>
-                  <TableCell>{item.from}</TableCell>
-                  <TableCell>{item.to}</TableCell>
-                  <TableCell>{item.difference}</TableCell>
-                  <TableCell>{item.times}</TableCell>
-                  <TableCell>{item.percentage}</TableCell>
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <a
+                      href={`https://www.wowhead.com/classic/item=${item.id}/`}
+                    >
+                      {item.item}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <CurrencyDisplay price={item.from} />
+                  </TableCell>
+                  <TableCell>
+                    <CurrencyDisplay price={item.to} />
+                  </TableCell>
+                  <TableCell>
+                    <CurrencyDisplay price={item.difference} />
+                  </TableCell>
+                  <TableCell className="font-mono text-right">
+                    {item.times}
+                  </TableCell>
+                  <TableCell className="font-mono text-right">
+                    {item.percentage}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function CurrencyDisplay({ price }: { price: Currency }) {
+  return (
+    <div className="grid grid-cols-3 font-mono">
+      <div className="flex justify-end">
+        {price.gold}
+        <span className="mt-1 inline-block rounded-full w-2.5 h-2 -rotate-12 bg-amber-300 ml-0.5" />
+      </div>
+      <div className="flex justify-end">
+        {price.silver}
+        <span className="mt-1 inline-block rounded-full w-2.5 h-2 -rotate-12 bg-gray-400 ml-0.5" />
+      </div>
+      <div className="flex justify-end">
+        {price.copper}
+        <span className="mt-1 inline-block rounded-full w-2.5 h-2 -rotate-12 bg-amber-800 ml-0.5" />
       </div>
     </div>
   );

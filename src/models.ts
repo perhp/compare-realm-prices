@@ -12,11 +12,17 @@ export interface Item {
 export interface CompareItem {
   id: number;
   name: string;
-  aPrice: { gold: number; silver: number; copper: number };
-  bPrice: { gold: number; silver: number; copper: number };
+  aPrice: Currency;
+  bPrice: Currency;
   diff: number;
-  diffPrice: { gold: number; silver: number; copper: number };
+  diffPrice: Currency;
   diffPercentage: number;
+}
+
+export interface Currency {
+  gold: number;
+  silver: number;
+  copper: number;
 }
 
 export type AllItemsDictionary = Record<
