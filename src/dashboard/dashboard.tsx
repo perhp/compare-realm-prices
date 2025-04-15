@@ -30,11 +30,8 @@ export default function Dashboard() {
 
   if (pricesIsLoading) {
     return (
-      <div className="flex flex-col h-screen bg-slate-800">
-        <div className="flex items-center h-10 px-8 text-sm font-medium text-gray-100 bg-slate-900 col-span-full" />
-        <div className="grid items-center text-2xl font-bold text-gray-100 place-content-center grow">
-          <LoaderPinwheel className="animate-spin size-14" />
-        </div>
+      <div className="grid h-screen place-content-center">
+        <LoaderPinwheel className="animate-spin size-14" />
       </div>
     );
   }
