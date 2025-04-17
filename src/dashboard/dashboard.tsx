@@ -77,6 +77,7 @@ export default function Dashboard() {
                   <TableCell>
                     <a
                       href={`https://www.wowhead.com/classic/item=${item.id}/`}
+                      target="_blank"
                     >
                       {item.item}
                     </a>
