@@ -39,8 +39,16 @@ function isValidGameItem(item: AllItemsDictionary[string]): boolean {
   return true;
 }
 
-function withinThreshold(value: number, threshold = 0.5): boolean {
-  return value >= 1 - threshold && value <= 1 + threshold;
+function withinPercent(
+  minBuyout: number,
+  marketValue: number,
+  threshold = 0.25,
+): boolean {
+  if (marketValue <= 0) {
+    return false;
+  }
+
+  return Math.abs(minBuyout - marketValue) / marketValue <= threshold;
 }
 
 function canCompare(
@@ -56,9 +64,10 @@ function canCompare(
     return false;
   }
 
-  const aItemDiff = aItem.marketValue / aItem.minBuyout;
-  const bItemDiff = bItem.marketValue / bItem.minBuyout;
-  if (!withinThreshold(aItemDiff) || !withinThreshold(bItemDiff)) {
+  if (
+    !withinPercent(aItem.minBuyout, aItem.marketValue) ||
+    !withinPercent(bItem.minBuyout, bItem.marketValue)
+  ) {
     return false;
   }
 
