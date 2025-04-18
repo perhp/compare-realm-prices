@@ -4,7 +4,9 @@ import { CompareItem } from "./models";
 import { comparePrices } from "./pricings/compare";
 import { getPrices } from "./pricings/get-prices";
 
-let lastUpdatedTime = 0;
+export const FIFTEEN_MINTUES = 1000 * 60 * 15;
+
+let lastUpdated = 0;
 let itemsCache: CompareItem[] = [];
 
 const server = serve({
@@ -20,11 +22,8 @@ const server = serve({
         const auctionHouseBID = +(params.get("auctionHouseBID") || 560); // Thunderstrike
 
         const currentTime = Date.now();
-        if (
-          currentTime - lastUpdatedTime < 1000 * 60 * 60 &&
-          itemsCache.length
-        ) {
-          return Response.json(itemsCache);
+        if (currentTime - lastUpdated < FIFTEEN_MINTUES && itemsCache.length) {
+          return Response.json({ lastUpdated, items: itemsCache });
         }
 
         const [aItems, bItems] = await getPrices(
@@ -34,9 +33,9 @@ const server = serve({
 
         const compared = await comparePrices(aItems, bItems);
         itemsCache = compared;
-        lastUpdatedTime = currentTime;
+        lastUpdated = currentTime;
 
-        return Response.json(compared);
+        return Response.json({ lastUpdated, items: compared });
       },
     },
   },

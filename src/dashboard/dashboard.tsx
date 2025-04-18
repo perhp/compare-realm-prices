@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -13,11 +14,14 @@ import { LoaderPinwheel } from "lucide-react";
 function useComparedPrices() {
   return useQuery({
     queryKey: ["compared-prices"],
-    queryFn: async (): Promise<Array<CompareItem>> => {
+    queryFn: async (): Promise<{
+      lastUpdated: number;
+      items: Array<CompareItem>;
+    }> => {
       const response = await fetch("/api/compared-prices");
       return await response.json();
     },
-    refetchInterval: 1000 * 60 * 60, // 1 hour
+    refetchInterval: 1000 * 60 * 5, // 5 minutes
   });
 }
 
@@ -36,11 +40,11 @@ export default function Dashboard() {
     );
   }
 
-  if (pricesIsError || !prices) {
+  if (pricesIsError || !prices?.items) {
     return <div>Error</div>;
   }
 
-  const result = prices.map((item) => ({
+  const result = prices.items.map((item) => ({
     id: item.id,
     item: item.name,
     from: item.aPrice,
@@ -53,7 +57,8 @@ export default function Dashboard() {
   return (
     <div className="py-10 font-medium">
       <div className="container max-w-screen-md mx-auto">
-        <div className="border border-black rounded">
+        <Badge>{prices.lastUpdated}</Badge>
+        <div className="border border-black rounded bg-primary">
           <Table>
             <TableHeader>
               <TableRow>
