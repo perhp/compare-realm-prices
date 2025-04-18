@@ -1,6 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,12 +24,17 @@ import { formatDistance } from "date-fns";
 import React from "react";
 import { PriceResponse } from "../dashboard";
 
+type StackSizeNone = "None";
+
 type Props = {
   prices: PriceResponse;
 };
 
 export default function ItemsTable({ prices }: Props) {
   const [search, setSearch] = React.useState("");
+  const [stackSize, setStackSize] = React.useState<number | StackSizeNone>(
+    "None",
+  );
 
   const result = prices.items.map((item) => ({
     id: item.id,
@@ -39,26 +50,61 @@ export default function ItemsTable({ prices }: Props) {
   }));
 
   const filteredResult = React.useMemo(() => {
-    if (!search) {
+    if (!search && stackSize === "None") {
       return result;
     }
 
     return result.filter((item) => {
+      if (stackSize && item.stackSize !== stackSize) {
+        return false;
+      }
+
       const searchLower = search.toLowerCase();
       return item.item.toLowerCase().includes(searchLower);
     });
   }, [search, result]);
 
+  const stackSizes = React.useMemo(() => {
+    const sizes = new Set<number>();
+    result.forEach((item) => {
+      sizes.add(item.stackSize);
+    });
+    return Array.from(sizes).sort((a, b) => b - a);
+  }, [result]);
+
   return (
     <div className="py-10 font-medium">
-      <div className="container max-w-screen-md mx-auto">
-        <div className="flex items-end justify-between mb-2">
+      <div className="container max-w-screen-lg mx-auto">
+        <div className="flex items-end mb-2">
           <Input
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search..."
-            className="max-w-xs border-black"
+            className="max-w-xs"
           />
-          <Badge variant="outline" className="border-black">
+          <Select
+            value={stackSize?.toString()}
+            onValueChange={(newStackSize) => {
+              if (newStackSize === "None") {
+                setStackSize("None");
+                return;
+              }
+
+              setStackSize(+newStackSize);
+            }}
+          >
+            <SelectTrigger className="ml-2">
+              {stackSize !== "None" ? stackSize : "Stack Size"}
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={"None"}>None</SelectItem>
+              {stackSizes.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Badge variant="outline" className="ml-auto">
             Updated {formatDistance(new Date(), prices.lastUpdated)} ago
           </Badge>
         </div>
@@ -69,22 +115,18 @@ export default function ItemsTable({ prices }: Props) {
               <TableRow>
                 <TableHead>Item</TableHead>
                 <TableHead className="w-[55px]">Stack</TableHead>
-                <TableHead className="w-[125px] text-right">
-                  Source Price
-                </TableHead>
-                <TableHead className="w-[125px] text-right">
-                  Target Price
-                </TableHead>
-                <TableHead className="w-[125px] text-right">
+                <TableHead className="w-[150px] text-right">Source</TableHead>
+                <TableHead className="w-[150px] text-right">Target</TableHead>
+                <TableHead className="w-[150px] text-right">
                   Difference
                 </TableHead>
-                <TableHead></TableHead>
-                <TableHead></TableHead>
+                <TableHead className="w-[100px]"></TableHead>
+                <TableHead className="w-[100px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredResult.map((item) => (
-                <TableRow key={item.id}>
+                <TableRow key={item.id} className="odd:bg-gray-50">
                   <TableCell>
                     <a
                       href={`https://www.wowhead.com/classic/item=${item.id}/`}
@@ -96,7 +138,7 @@ export default function ItemsTable({ prices }: Props) {
                   <TableCell className="font-mono">{item.stackSize}</TableCell>
                   <TableCell>
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger className="w-full">
                         <CurrencyDisplay price={item.from} />
                       </TooltipTrigger>
                       <TooltipContent>
@@ -106,7 +148,7 @@ export default function ItemsTable({ prices }: Props) {
                   </TableCell>
                   <TableCell>
                     <Tooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger className="w-full">
                         <CurrencyDisplay price={item.to} />
                       </TooltipTrigger>
                       <TooltipContent>
