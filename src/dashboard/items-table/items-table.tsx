@@ -8,6 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Currency } from "@/models";
 import { formatDistance } from "date-fns";
 import React from "react";
@@ -23,8 +28,11 @@ export default function ItemsTable({ prices }: Props) {
   const result = prices.items.map((item) => ({
     id: item.id,
     item: item.name,
+    stackSize: item.stackSize,
     from: item.aPrice,
+    fromStack: item.aStackPrice,
     to: item.bPrice,
+    toStack: item.bStackPrice,
     difference: item.diffPrice,
     times: `x${Math.abs((item.diffPercentage / 100) * -1).toFixed(2)}`,
     percentage: `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
@@ -60,6 +68,7 @@ export default function ItemsTable({ prices }: Props) {
             <TableHeader>
               <TableRow>
                 <TableHead>Item</TableHead>
+                <TableHead className="w-[55px]">Stack</TableHead>
                 <TableHead className="w-[125px] text-right">
                   Source Price
                 </TableHead>
@@ -84,11 +93,26 @@ export default function ItemsTable({ prices }: Props) {
                       {item.item}
                     </a>
                   </TableCell>
+                  <TableCell className="font-mono">{item.stackSize}</TableCell>
                   <TableCell>
-                    <CurrencyDisplay price={item.from} />
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <CurrencyDisplay price={item.from} />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <CurrencyDisplay price={item.fromStack} />
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
-                    <CurrencyDisplay price={item.to} />
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <CurrencyDisplay price={item.to} />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <CurrencyDisplay price={item.toStack} />
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
                     <CurrencyDisplay price={item.difference} />
@@ -118,7 +142,7 @@ export default function ItemsTable({ prices }: Props) {
 
 function CurrencyDisplay({ price }: { price: Currency }) {
   return (
-    <div className="grid grid-cols-3 font-mono">
+    <div className="grid grid-cols-3 gap-2 font-mono shrink-0">
       <div className="flex justify-end">
         {price.gold}
         <span className="mt-1 inline-block rounded-full w-2.5 h-2 -rotate-12 bg-amber-300 ml-0.5" />

@@ -12,8 +12,11 @@ export interface Item {
 export interface CompareItem {
   id: number;
   name: string;
+  stackSize: number;
   aPrice: Currency;
+  aStackPrice: Currency;
   bPrice: Currency;
+  bStackPrice: Currency;
   diff: number;
   diffPrice: Currency;
   diffPercentage: number;

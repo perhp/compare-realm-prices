@@ -74,6 +74,16 @@ function canCompare(
   return true;
 }
 
+function getStackSize({ tooltip }: AllItemsDictionary[string]): number {
+  return (
+    Number(
+      tooltip
+        .find(({ label }) => label.toLowerCase().startsWith("max stack"))
+        ?.label.match(/\d+/)?.[0],
+    ) || 1
+  );
+}
+
 export async function comparePrices(aItems: Item[], bItems: Item[]) {
   const allItemsDictionary = (await Bun.file(
     "./data/all-items-dictionary.json",
@@ -88,14 +98,19 @@ export async function comparePrices(aItems: Item[], bItems: Item[]) {
       return canCompare(aItem, bItem, gameItem);
     })
     .map((aItem) => {
+      const gameItem = allItemsDictionary[aItem.itemId];
       const bItem = bItemsDictionary[aItem.itemId];
       const diff = aItem.marketValue - (bItem?.marketValue || 0);
+      const stackSize = getStackSize(gameItem);
 
       return {
         id: aItem.itemId,
         name: allItemsDictionary[aItem.itemId].name,
+        stackSize: stackSize,
         aPrice: convertCopperToGSC(aItem.marketValue),
+        aStackPrice: convertCopperToGSC(aItem.marketValue * stackSize),
         bPrice: convertCopperToGSC(bItem?.marketValue || 0),
+        bStackPrice: convertCopperToGSC((bItem?.marketValue || 0) * stackSize),
         diff,
         diffPrice: convertCopperToGSC(Math.abs(diff)),
         diffPercentage:
