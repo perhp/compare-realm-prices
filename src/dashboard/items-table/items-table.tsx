@@ -55,7 +55,7 @@ export default function ItemsTable({ prices }: Props) {
     }
 
     return result.filter((item) => {
-      if (stackSize && item.stackSize !== stackSize) {
+      if (stackSize !== "None" && item.stackSize !== stackSize) {
         return false;
       }
 
