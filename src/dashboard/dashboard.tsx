@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { CompareItem, Currency } from "@/models";
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { LoaderPinwheel } from "lucide-react";
 
 function useComparedPrices() {
@@ -57,8 +58,10 @@ export default function Dashboard() {
   return (
     <div className="py-10 font-medium">
       <div className="container max-w-screen-md mx-auto">
-        <Badge>{prices.lastUpdated}</Badge>
-        <div className="border border-black rounded bg-primary">
+        <Badge variant="outline" className="border-black">
+          Last updated: {format(prices.lastUpdated, "dd/MM/yyyy")}
+        </Badge>
+        <div className="border border-black rounded">
           <Table>
             <TableHeader>
               <TableRow>
