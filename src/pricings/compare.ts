@@ -112,6 +112,7 @@ export async function comparePrices(aItems: Item[], bItems: Item[]) {
         bPrice: convertCopperToGSC(bItem?.marketValue || 0),
         bStackPrice: convertCopperToGSC((bItem?.marketValue || 0) * stackSize),
         diff,
+        diffStackPrice: convertCopperToGSC(Math.abs(diff || 0) * stackSize),
         diffPrice: convertCopperToGSC(Math.abs(diff)),
         diffPercentage:
           aItem.marketValue > 0

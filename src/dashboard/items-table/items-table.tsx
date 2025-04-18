@@ -45,6 +45,7 @@ export default function ItemsTable({ prices }: Props) {
     to: item.bPrice,
     toStack: item.bStackPrice,
     difference: item.diffPrice,
+    differenceStack: item.diffStackPrice,
     times: `x${Math.abs((item.diffPercentage / 100) * -1).toFixed(2)}`,
     percentage: `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
   }));
@@ -157,7 +158,14 @@ export default function ItemsTable({ prices }: Props) {
                     </Tooltip>
                   </TableCell>
                   <TableCell>
-                    <CurrencyDisplay price={item.difference} />
+                    <Tooltip>
+                      <TooltipTrigger className="w-full">
+                        <CurrencyDisplay price={item.difference} />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <CurrencyDisplay price={item.differenceStack} />
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell className="font-mono text-right">
                     {item.times}

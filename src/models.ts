@@ -19,6 +19,7 @@ export interface CompareItem {
   bStackPrice: Currency;
   diff: number;
   diffPrice: Currency;
+  diffStackPrice: Currency;
   diffPercentage: number;
 }
 
