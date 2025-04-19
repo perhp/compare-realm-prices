@@ -122,20 +122,20 @@ export default function ItemsTable({ prices }: Props) {
               ))}
             </SelectContent>
           </Select>
-          <div className="flex gap-2 ml-2">
+          <div className="flex ml-2">
             <div className="relative">
               <Input
                 onChange={(e) => setPrice({ ...price, gold: +e.target.value })}
-                className="w-16 pr-5"
+                className="w-16 pr-5 rounded-r-none"
               />
               <span className="rounded-full w-2.5 h-2 -rotate-12 bg-amber-300 absolute right-2 top-2/5" />
             </div>
-            <div className="relative">
+            <div className="relative -mx-px">
               <Input
                 onChange={(e) =>
                   setPrice({ ...price, silver: +e.target.value })
                 }
-                className="w-16"
+                className="w-16 rounded-none"
               />
               <span className="rounded-full w-2.5 h-2 -rotate-12 bg-gray-400 absolute right-2 top-2/5" />
             </div>
@@ -144,7 +144,7 @@ export default function ItemsTable({ prices }: Props) {
                 onChange={(e) =>
                   setPrice({ ...price, copper: +e.target.value })
                 }
-                className="w-16"
+                className="w-16 rounded-l-none"
               />
               <span className="rounded-full w-2.5 h-2 -rotate-12 bg-amber-800 absolute right-2 top-2/5" />
             </div>
