@@ -65,6 +65,10 @@ function canCompare(
     return false;
   }
 
+  if (aItem.marketValue > bItem.marketValue) {
+    return false;
+  }
+
   if (
     !withinPercent(aItem.minBuyout, aItem.marketValue) ||
     !withinPercent(bItem.minBuyout, bItem.marketValue)
