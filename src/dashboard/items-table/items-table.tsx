@@ -35,6 +35,12 @@ export default function ItemsTable({ prices }: Props) {
   const [stackSize, setStackSize] = React.useState<number | StackSizeNone>(
     "None",
   );
+  const [price, setPrice] = React.useState<Currency>({
+    copper: 0,
+    gold: 0,
+    silver: 0,
+    total: 0,
+  });
 
   const result = prices.items.map((item) => ({
     id: item.id,
@@ -51,12 +57,23 @@ export default function ItemsTable({ prices }: Props) {
   }));
 
   const filteredResult = React.useMemo(() => {
-    if (!search && stackSize === "None") {
+    if (
+      !search &&
+      stackSize === "None" &&
+      price.gold === 0 &&
+      price.silver === 0 &&
+      price.copper === 0
+    ) {
       return result;
     }
 
     return result.filter((item) => {
       if (stackSize !== "None" && item.stackSize !== stackSize) {
+        return false;
+      }
+
+      const total = price.gold * 10000 + price.silver * 100 + price.copper;
+      if (total > item.from.total) {
         return false;
       }
 
@@ -105,6 +122,34 @@ export default function ItemsTable({ prices }: Props) {
               ))}
             </SelectContent>
           </Select>
+          <div className="flex gap-2 ml-2">
+            <div className="relative">
+              <Input
+                onChange={(e) => setPrice({ ...price, gold: +e.target.value })}
+                className="w-16 pr-5"
+              />
+              <span className="rounded-full w-2.5 h-2 -rotate-12 bg-amber-300 absolute right-2 top-2/5" />
+            </div>
+            <div className="relative">
+              <Input
+                onChange={(e) =>
+                  setPrice({ ...price, silver: +e.target.value })
+                }
+                className="w-16"
+              />
+              <span className="rounded-full w-2.5 h-2 -rotate-12 bg-gray-400 absolute right-2 top-2/5" />
+            </div>
+            <div className="relative">
+              <Input
+                onChange={(e) =>
+                  setPrice({ ...price, copper: +e.target.value })
+                }
+                className="w-16"
+              />
+              <span className="rounded-full w-2.5 h-2 -rotate-12 bg-amber-800 absolute right-2 top-2/5" />
+            </div>
+          </div>
+
           <Badge variant="outline" className="ml-auto">
             Updated {formatDistance(new Date(), prices.lastUpdated)} ago
           </Badge>

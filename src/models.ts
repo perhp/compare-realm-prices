@@ -17,7 +17,6 @@ export interface CompareItem {
   aStackPrice: Currency;
   bPrice: Currency;
   bStackPrice: Currency;
-  diff: number;
   diffPrice: Currency;
   diffStackPrice: Currency;
   diffPercentage: number;
@@ -27,6 +26,7 @@ export interface Currency {
   gold: number;
   silver: number;
   copper: number;
+  total: number;
 }
 
 export type AllItemsDictionary = Record<

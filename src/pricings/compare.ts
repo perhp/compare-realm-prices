@@ -1,15 +1,16 @@
-import type { AllItemsDictionary, CompareItem, Item } from "../models";
+import type {
+  AllItemsDictionary,
+  CompareItem,
+  Currency,
+  Item,
+} from "../models";
 
-function convertCopperToGSC(totalCopper: number): {
-  gold: number;
-  silver: number;
-  copper: number;
-} {
+function convertCopperToGSC(totalCopper: number): Currency {
   const gold = Math.floor(totalCopper / 10_000);
   const remainderAfterGold = totalCopper % 10_000;
   const silver = Math.floor(remainderAfterGold / 100);
   const copper = remainderAfterGold % 100;
-  return { gold, silver, copper };
+  return { gold, silver, copper, total: totalCopper };
 }
 
 function buildItemDictionary(items: Item[]): Record<number, Item> {
@@ -111,7 +112,6 @@ export async function comparePrices(aItems: Item[], bItems: Item[]) {
         aStackPrice: convertCopperToGSC(aItem.marketValue * stackSize),
         bPrice: convertCopperToGSC(bItem?.marketValue || 0),
         bStackPrice: convertCopperToGSC((bItem?.marketValue || 0) * stackSize),
-        diff,
         diffStackPrice: convertCopperToGSC(Math.abs(diff || 0) * stackSize),
         diffPrice: convertCopperToGSC(Math.abs(diff)),
         diffPercentage:
