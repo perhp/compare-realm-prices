@@ -21,100 +21,109 @@ import {
 } from "@/components/ui/tooltip";
 import { Currency } from "@/models";
 import { formatDistance } from "date-fns";
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { PriceResponse } from "../dashboard";
 
-type StackSizeNone = "None";
+type StackSize = number | "None";
 
-type Props = {
-  prices: PriceResponse;
+type ResultRow = {
+  id: number;
+  item: string;
+  stackSize: number;
+  from: Currency;
+  fromStack: Currency;
+  to: Currency;
+  toStack: Currency;
+  difference: Currency;
+  differenceStack: Currency;
+  times: string;
+  percentage: string;
 };
 
+interface Props {
+  prices: PriceResponse;
+}
+
 export default function ItemsTable({ prices }: Props) {
-  const [search, setSearch] = React.useState("");
-  const [stackSize, setStackSize] = React.useState<number | StackSizeNone>(
-    "None",
-  );
-  const [price, setPrice] = React.useState<Currency>({
+  const [search, setSearch] = useState("");
+  const [stackSize, setStackSize] = useState<StackSize>("None");
+  const [price, setPrice] = useState<Currency>({
     copper: 0,
-    gold: 0,
     silver: 0,
+    gold: 0,
     total: 0,
   });
 
-  const result = prices.items.map((item) => ({
-    id: item.id,
-    item: item.name,
-    stackSize: item.stackSize,
-    from: item.aPrice,
-    fromStack: item.aStackPrice,
-    to: item.bPrice,
-    toStack: item.bStackPrice,
-    difference: item.diffPrice,
-    differenceStack: item.diffStackPrice,
-    times: `x${Math.abs((item.diffPercentage / 100) * -1).toFixed(2)}`,
-    percentage: `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
-  }));
+  const itemsData = useMemo<ResultRow[]>(() => {
+    return prices.items.map((item) => ({
+      id: item.id,
+      item: item.name,
+      stackSize: item.stackSize,
+      from: item.aPrice,
+      fromStack: item.aStackPrice,
+      to: item.bPrice,
+      toStack: item.bStackPrice,
+      difference: item.diffPrice,
+      differenceStack: item.diffStackPrice,
+      times: `x${Math.abs(item.diffPercentage / -100).toFixed(2)}`,
+      percentage: `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
+    }));
+  }, [prices.items]);
 
-  const filteredResult = React.useMemo(() => {
-    if (
-      !search &&
-      stackSize === "None" &&
-      price.gold === 0 &&
-      price.silver === 0 &&
-      price.copper === 0
-    ) {
-      return result;
-    }
+  const totalFilterValue =
+    price.gold * 10000 + price.silver * 100 + price.copper;
 
-    return result.filter((item) => {
-      if (stackSize !== "None" && item.stackSize !== stackSize) {
+  const filteredData = useMemo(() => {
+    return itemsData.filter((row) => {
+      if (stackSize !== "None" && row.stackSize !== stackSize) {
         return false;
       }
 
-      const total = price.gold * 10000 + price.silver * 100 + price.copper;
-      if (total > item.from.total) {
+      if (totalFilterValue > row.from.total) {
         return false;
       }
 
-      const searchLower = search.toLowerCase();
-      return item.item.toLowerCase().includes(searchLower);
-    });
-  }, [search, result]);
+      if (search && !row.item.toLowerCase().includes(search.toLowerCase())) {
+        return false;
+      }
 
-  const stackSizes = React.useMemo(() => {
-    const sizes = new Set<number>();
-    result.forEach((item) => {
-      sizes.add(item.stackSize);
+      return true;
     });
-    return Array.from(sizes).sort((a, b) => b - a);
-  }, [result]);
+  }, [itemsData, search, stackSize, totalFilterValue]);
+
+  const stackSizes = useMemo(() => {
+    return [...new Set(itemsData.map((r) => r.stackSize))].sort(
+      (a, b) => b - a,
+    );
+  }, [itemsData]);
+
+  const handlePriceChange = useCallback(
+    (field: keyof Currency) => (e: React.ChangeEvent<HTMLInputElement>) =>
+      setPrice((prev) => ({ ...prev, [field]: +e.target.value })),
+    [],
+  );
 
   return (
     <div className="py-10 font-medium">
       <div className="container max-w-screen-lg mx-auto">
         <div className="flex items-end mb-2">
           <Input
-            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="max-w-xs"
           />
           <Select
-            value={stackSize?.toString()}
-            onValueChange={(newStackSize) => {
-              if (newStackSize === "None") {
-                setStackSize("None");
-                return;
-              }
-
-              setStackSize(+newStackSize);
-            }}
+            value={stackSize.toString()}
+            onValueChange={(value) =>
+              setStackSize(value === "None" ? "None" : +value)
+            }
           >
             <SelectTrigger className="ml-2">
               {stackSize !== "None" ? stackSize : "Stack Size"}
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={"None"}>None</SelectItem>
+              <SelectItem value="None">None</SelectItem>
               {stackSizes.map((size) => (
                 <SelectItem key={size} value={size.toString()}>
                   {size}
@@ -123,31 +132,21 @@ export default function ItemsTable({ prices }: Props) {
             </SelectContent>
           </Select>
           <div className="flex ml-2">
-            <div className="relative">
-              <Input
-                onChange={(e) => setPrice({ ...price, gold: +e.target.value })}
-                className="w-16 pr-5 rounded-r-none"
-              />
-              <span className="rounded-full w-2.5 h-2 -rotate-12 bg-amber-300 absolute right-2 top-2/5" />
-            </div>
-            <div className="relative -mx-px">
-              <Input
-                onChange={(e) =>
-                  setPrice({ ...price, silver: +e.target.value })
-                }
-                className="w-16 rounded-none"
-              />
-              <span className="rounded-full w-2.5 h-2 -rotate-12 bg-gray-400 absolute right-2 top-2/5" />
-            </div>
-            <div className="relative">
-              <Input
-                onChange={(e) =>
-                  setPrice({ ...price, copper: +e.target.value })
-                }
-                className="w-16 rounded-l-none"
-              />
-              <span className="rounded-full w-2.5 h-2 -rotate-12 bg-amber-800 absolute right-2 top-2/5" />
-            </div>
+            <PriceInput
+              value={price.gold}
+              onChange={handlePriceChange("gold")}
+              color="bg-amber-300"
+            />
+            <PriceInput
+              value={price.silver}
+              onChange={handlePriceChange("silver")}
+              color="bg-gray-400"
+            />
+            <PriceInput
+              value={price.copper}
+              onChange={handlePriceChange("copper")}
+              color="bg-amber-800"
+            />
           </div>
 
           <Badge variant="outline" className="ml-auto">
@@ -166,63 +165,41 @@ export default function ItemsTable({ prices }: Props) {
                 <TableHead className="w-[150px] text-right">
                   Difference
                 </TableHead>
-                <TableHead className="w-[100px]"></TableHead>
-                <TableHead className="w-[100px]"></TableHead>
+                <TableHead className="w-[100px] text-right">Times</TableHead>
+                <TableHead className="w-[100px] text-right">%</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredResult.map((item) => (
-                <TableRow key={item.id} className="odd:bg-gray-50">
-                  <TableCell>
-                    <a
-                      href={`https://www.wowhead.com/classic/item=${item.id}/`}
-                      target="_blank"
-                    >
-                      {item.item}
-                    </a>
-                  </TableCell>
-                  <TableCell className="font-mono">{item.stackSize}</TableCell>
-                  <TableCell>
-                    <Tooltip>
-                      <TooltipTrigger className="w-full">
-                        <CurrencyDisplay price={item.from} />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <CurrencyDisplay price={item.fromStack} />
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip>
-                      <TooltipTrigger className="w-full">
-                        <CurrencyDisplay price={item.to} />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <CurrencyDisplay price={item.toStack} />
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip>
-                      <TooltipTrigger className="w-full">
-                        <CurrencyDisplay price={item.difference} />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <CurrencyDisplay price={item.differenceStack} />
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell className="font-mono text-right">
-                    {item.times}
-                  </TableCell>
-                  <TableCell className="font-mono text-right">
-                    {item.percentage}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredResult.length === 0 && (
+              {filteredData.length > 0 ? (
+                filteredData.map((row) => (
+                  <TableRow key={row.id} className="odd:bg-gray-50">
+                    <TableCell>
+                      <a
+                        href={`https://www.wowhead.com/classic/item=${row.id}/`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {row.item}
+                      </a>
+                    </TableCell>
+                    <TableCell className="font-mono">{row.stackSize}</TableCell>
+                    <PriceCell base={row.from} stack={row.fromStack} />
+                    <PriceCell base={row.to} stack={row.toStack} />
+                    <PriceCell
+                      base={row.difference}
+                      stack={row.differenceStack}
+                    />
+                    <TableCell className="font-mono text-right">
+                      {row.times}
+                    </TableCell>
+                    <TableCell className="font-mono text-right">
+                      {row.percentage}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     No results found
                   </TableCell>
                 </TableRow>
@@ -235,21 +212,67 @@ export default function ItemsTable({ prices }: Props) {
   );
 }
 
-function CurrencyDisplay({ price }: { price: Currency }) {
+function PriceInput({
+  value,
+  onChange,
+  color,
+}: {
+  value: number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  color: string;
+}) {
+  return (
+    <div className="relative first:[&>input]:rounded-l last:[&>input]:rounded-r nth-[2]:-mx-px">
+      <Input
+        type="number"
+        min={0}
+        value={value || ""}
+        onChange={onChange}
+        className="w-16 shrink-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none rounded-none"
+      />
+      <span
+        className={`absolute right-2 top-1/2 h-2 w-2.5 -translate-y-1/2 -rotate-12 rounded-full ${color}`}
+      />
+    </div>
+  );
+}
+
+function PriceCell({ base, stack }: { base: Currency; stack: Currency }) {
+  return (
+    <TableCell>
+      <Tooltip>
+        <TooltipTrigger className="w-full">
+          <CurrencyDisplay price={base} />
+        </TooltipTrigger>
+        <TooltipContent>
+          <CurrencyDisplay price={stack} />
+        </TooltipContent>
+      </Tooltip>
+    </TableCell>
+  );
+}
+
+const CurrencyDisplay = React.memo(function CurrencyDisplay({
+  price,
+}: {
+  price: Currency;
+}) {
   return (
     <div className="grid grid-cols-3 gap-2 font-mono shrink-0">
-      <div className="flex justify-end">
-        {price.gold}
-        <span className="mt-1 inline-block rounded-full w-2.5 h-2 -rotate-12 bg-amber-300 ml-0.5" />
-      </div>
-      <div className="flex justify-end">
-        {price.silver}
-        <span className="mt-1 inline-block rounded-full w-2.5 h-2 -rotate-12 bg-gray-400 ml-0.5" />
-      </div>
-      <div className="flex justify-end">
-        {price.copper}
-        <span className="mt-1 inline-block rounded-full w-2.5 h-2 -rotate-12 bg-amber-800 ml-0.5" />
-      </div>
+      <PriceUnit value={price.gold} dotColor="bg-amber-300" />
+      <PriceUnit value={price.silver} dotColor="bg-gray-400" />
+      <PriceUnit value={price.copper} dotColor="bg-amber-800" />
+    </div>
+  );
+});
+
+function PriceUnit({ value, dotColor }: { value: number; dotColor: string }) {
+  return (
+    <div className="flex justify-end">
+      {value}
+      <span
+        className={`ml-0.5 mt-1 inline-block h-2 w-2.5 -rotate-12 rounded-full ${dotColor}`}
+      />
     </div>
   );
 }
