@@ -45,15 +45,6 @@ interface Props {
 }
 
 export default function ItemsTable({ prices }: Props) {
-  const [search, setSearch] = useState("");
-  const [stackSize, setStackSize] = useState<StackSize>("None");
-  const [price, setPrice] = useState<Currency>({
-    copper: 0,
-    silver: 0,
-    gold: 0,
-    total: 0,
-  });
-
   const itemsData = useMemo<ResultRow[]>(() => {
     return prices.items.map((item) => ({
       id: item.id,
@@ -69,6 +60,23 @@ export default function ItemsTable({ prices }: Props) {
       percentage: `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
     }));
   }, [prices.items]);
+
+  const stackSizes = useMemo(() => {
+    return [...new Set(itemsData.map((r) => r.stackSize))].sort(
+      (a, b) => b - a,
+    );
+  }, [itemsData]);
+
+  const [search, setSearch] = useState("");
+  const [stackSize, setStackSize] = useState<StackSize>(
+    stackSizes[0] || "None",
+  );
+  const [price, setPrice] = useState<Currency>({
+    copper: 0,
+    silver: 0,
+    gold: 0,
+    total: 0,
+  });
 
   const totalFilterValue =
     price.gold * 10000 + price.silver * 100 + price.copper;
@@ -90,12 +98,6 @@ export default function ItemsTable({ prices }: Props) {
       return true;
     });
   }, [itemsData, search, stackSize, totalFilterValue]);
-
-  const stackSizes = useMemo(() => {
-    return [...new Set(itemsData.map((r) => r.stackSize))].sort(
-      (a, b) => b - a,
-    );
-  }, [itemsData]);
 
   const handlePriceChange = useCallback(
     (field: keyof Currency) => (e: React.ChangeEvent<HTMLInputElement>) =>
