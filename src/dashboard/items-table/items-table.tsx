@@ -36,7 +36,6 @@ type ResultRow = {
   toStack: Currency;
   difference: Currency;
   differenceStack: Currency;
-  times: string;
   percentage: string;
 };
 
@@ -56,8 +55,7 @@ export default function ItemsTable({ prices }: Props) {
       toStack: item.bStackPrice,
       difference: item.diffPrice,
       differenceStack: item.diffStackPrice,
-      times: `x${Math.abs(item.diffPercentage / -100).toFixed(2)}`,
-      percentage: `${Math.abs(item.diffPercentage * -1).toFixed(2)}%`,
+      percentage: `${Math.abs(item.diffPercentage).toFixed(2)}%`,
     }));
   }, [prices.items]);
 
@@ -167,8 +165,9 @@ export default function ItemsTable({ prices }: Props) {
                 <TableHead className="w-[150px] text-right">
                   Difference
                 </TableHead>
-                <TableHead className="w-[100px] text-right">Times</TableHead>
-                <TableHead className="w-[100px] text-right">%</TableHead>
+                <TableHead className="w-[100px] text-right font-bold">
+                  %
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -191,9 +190,6 @@ export default function ItemsTable({ prices }: Props) {
                       base={row.difference}
                       stack={row.differenceStack}
                     />
-                    <TableCell className="font-mono text-right">
-                      {row.times}
-                    </TableCell>
                     <TableCell className="font-mono text-right">
                       {row.percentage}
                     </TableCell>
